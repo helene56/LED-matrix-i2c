@@ -120,19 +120,12 @@ void blink_led(std::uint8_t *color, std::uint8_t *clear, int sleep_seconds)
 
 void set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
 {   
+    // use bitwise operators instead
+    // turn rgb into a single flag
+    std::uint8_t rgb_flag {static_cast<std::uint8_t>((r << 2) | (g << 1) | (b << 0))};
     int shift {0};
-    if (r)
-    {
-        shift = 0;
-    }
-    else if (g)
-    {
-        shift = 8;
-    }
-    else if (b)
-    {
-        shift = 16;
-    }
+
+    shift = (rgb_flag * 8) - 32;
 
     int row = x * 24;
     int col = shift + y;
