@@ -122,17 +122,18 @@ void set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
 {   
     // use bitwise operators instead
     // turn rgb into a single flag
+    // at some point if the rgb should also hold intensity, 
+    // check for if number is true with tenary operators
     std::uint8_t rgb_flag {static_cast<std::uint8_t>((r << 2) | (g << 1) | (b << 0))};
     int shift {0};
 
     shift = (rgb_flag * 8) - 32;
 
-    int row = x * 24;
-    int col = shift + y;
+    const int row = x * 24;
+    const int col = shift + y;
 
-    std::uint8_t placement = row + col;
+    const std::uint8_t placement = row + col;
     std::uint8_t color[2] {placement, 63};
-    printf("placement %d\n", placement);
     // for now always just use full intensity
     send_led_data(color, sizeof(color));
 
