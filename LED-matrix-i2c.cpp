@@ -21,13 +21,16 @@ void clear_row(int row);
 // clear whole matrix
 void clear_matrix();
 // blink
-void blink_led(std::uint8_t *color, std::uint8_t *clear, int sleep_seconds);
+void blink_led(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b, 
+               int sleep_seconds);
 // initialize the i2c communication
 void initialize_i2c();
 
 void led_row(int row, std::uint8_t *color, size_t lenght);
-
+// can only set r, g or b to a value
 void set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b);
+
+void clear_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b);
 
 int main()
 {
@@ -56,15 +59,19 @@ int main()
     // the 5th led in the first row, turned fully on
     std::uint8_t red2[2] {4, 63};
     clear_matrix();
-    set_pixel(2, 4, 1, 0, 0);
+    set_pixel(2, 4, 255, 0, 0);
+    sleep_ms(10000);
+    set_pixel(6, 0, 0, 0, 255);
     while (true) {
         // clear_matrix();
         // Example to turn on the Pico W LED
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
         printf("Hello, world!\n");
-
-        blink_led(red, clear, 250);
-        blink_led(red2, clear2, 250);
+        blink_led(0, 0, 100, 0, 0, 250);
+        blink_led(0, 4, 255, 0, 0, 250);
+        
+        // blink_led(red, clear, 250);
+        // blink_led(red2, clear2, 250);
     }
 }
 
@@ -110,11 +117,11 @@ void clear_matrix()
     }
 }
 
-void blink_led(std::uint8_t *color, std::uint8_t *clear, int sleep_seconds)
+void blink_led(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b, int sleep_seconds)
 {
-    send_led_data(color, 2);
+    set_pixel(x, y, r, g, b);
     sleep_ms(sleep_seconds);
-    send_led_data(clear, 2);
+    clear_pixel(x, y, r, g, b);
     sleep_ms(sleep_seconds);
 }
 
@@ -122,21 +129,44 @@ void set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
 {   
     // use bitwise operators instead
     // turn rgb into a single flag
-    // at some point if the rgb should also hold intensity, 
-    // check for if number is true with tenary operators
-    std::uint8_t rgb_flag {static_cast<std::uint8_t>((r << 2) | (g << 1) | (b << 0))};
+    std::uint8_t rgb_flag {static_cast<std::uint8_t>(((r ? 1: 0) << 2) | ((g ? 1: 0) << 1) | ((b ? 1: 0) << 0))};
+    int shift {0};
+
+    shift = (rgb_flag == 0b100) ? 0 :
+            (rgb_flag == 0b010) ? 8 :
+            (rgb_flag == 0b001) ? 16 : -1; // -1 for error handling
+
+    const int row = x * 24;
+    const int col = shift + y;
+    
+    const std::uint8_t placement = row + col;
+    printf("shift: %d\n", shift);
+    printf("placement: %d\n", placement);
+    // sets the intensity to the first value that is not 0
+    const std::uint8_t intensity {static_cast<std::uint8_t>((r != 0) ? r : ((g != 0) ? g : ((b != 0) ? b : 0)))};
+    // max value can only be 63 because the registers only take up to 63
+    std::uint8_t color[2] {placement, static_cast<std::uint8_t>(((intensity * 63) / 255))};
+    // for now always just use full intensity
+    send_led_data(color, sizeof(color));
+
+}
+
+void clear_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
+
+{
+    std::uint8_t rgb_flag {static_cast<std::uint8_t>(((r ? 1: 0) << 2) | ((g ? 1: 0) << 1) | ((b ? 1: 0) << 0))};
     int shift {0};
 
     shift = (rgb_flag * 8) - 32;
-
+    // 2. turn rgb values into intensity
     const int row = x * 24;
     const int col = shift + y;
 
     const std::uint8_t placement = row + col;
-    std::uint8_t color[2] {placement, 63};
-    // for now always just use full intensity
-    send_led_data(color, sizeof(color));
 
+    std::uint8_t clear_color[2] {placement, 0x00};
+    // for now always just use full intensity
+    send_led_data(clear_color, sizeof(clear_color));
 }
 
 void initialize_i2c()
