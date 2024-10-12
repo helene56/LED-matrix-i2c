@@ -1,2 +1,10 @@
 build
 CMakeFiles/
+CMakeCache.txt
+build.ninja
+cmake_install.cmake
+compile_commands.json
+/generated/
+/pico-sdk/
+/picoasm/
+/picoasm-install/
