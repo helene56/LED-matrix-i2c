@@ -10,14 +10,15 @@
 #define I2C_PORT i2c0
 #define I2C_SDA 8
 #define I2C_SCL 9
-#define POWER_PIN 22
+#define POWER_PIN 16
 // address to ATtiny which interfaces with the led matrix
 #define ATtiny_address 0x46
 
+void send_led_data_continue(std::uint8_t *data, size_t lenght);
 // send data to the led matrix
 void send_led_data(std::uint8_t *data, size_t lenght);
 // clear row
-void clear_row(int row);
+inline void clear_row(std::uint8_t* buffer);
 // clear whole matrix
 void clear_matrix();
 // blink
@@ -38,9 +39,9 @@ int main()
 {
     stdio_init_all();
     // should use a transistor with this pin as well maybe..
-    // gpio_init(POWER_PIN);
-    // gpio_set_dir(POWER_PIN, GPIO_OUT);
-    // gpio_put(POWER_PIN, 1);
+    gpio_init(POWER_PIN);
+    gpio_set_dir(POWER_PIN, GPIO_OUT);
+    gpio_put(POWER_PIN, 1);
     // Initialise the Wi-Fi chip
     if (cyw43_arch_init()) {
         printf("Wi-Fi init failed\n");
@@ -60,15 +61,21 @@ int main()
     std::uint8_t red[2] {0, 63};
     // the 5th led in the first row, turned fully on
     std::uint8_t red2[2] {4, 63};
-    clear_matrix();
+    // matrix get powered on, but it is not fast enough for the matrix to be clesared
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     clear_matrix();
+    // }
+    // clear_matrix();
     set_pixel(2, 4, 255, 0, 0);
     set_pixel(6, 0, 0, 0, 255);
     set_pixel(7, 0, 0, 0, 10);
     set_pixel(3, 0, 0, 255, 0);
     set_pixel(3, 0, 255, 0, 0);
-    set_color_pixel(1, 0, 255, 255, 0);
+    set_color_pixel(1, 0, 5, 255, 251);
+    set_color_pixel(1, 1, 66, 14, 150);
     while (true) {
-        // clear_matrix();
+        clear_matrix();
         // Example to turn on the Pico W LED
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
         printf("Hello, world!\n");
@@ -95,6 +102,22 @@ void send_led_data(std::uint8_t *data, size_t lenght)
     
 }
 
+void send_led_data_continue(std::uint8_t *data, size_t lenght)
+{
+    int result = i2c_write_blocking(I2C_PORT, ATtiny_address, data, lenght, true);
+
+    if (result < 0)
+    {
+        printf("I2C write failed\n");
+    }
+    else
+    {
+        printf("Data sent succesfully\n");
+    }
+    
+}
+
+
 void led_row(int row, std::uint8_t *color, size_t lenght)
 {
     row = row * 24;
@@ -104,22 +127,45 @@ void led_row(int row, std::uint8_t *color, size_t lenght)
     }
 }
 
-void clear_row(int row)
+inline void clear_row(std::uint8_t* buffer)
 {
-    row = row * 24;
-    for (std::uint8_t i = row; i <= 23+row; i++)
-    {
-        std::uint8_t clear[2] {i, 0x00};
-        send_led_data(clear, 2);
+    // for (std::uint8_t i = row; i <= 23+row; i++)
+    // {
+    //     // std::uint8_t clear[2] {i, 0x00};
+    //     buffer[2 * (i - row)] = i;
+    //     buffer[2 * (i - row) + 1] = 0x00;
+
+    //     printf("buffer [%d, %d] = %d, %d\n", 2 * (i - row), 2 * (i - row) + 1, i, 0);
+    //     // batch the data into a buffer, then send all at once
+    //     // send_led_data(clear, 2);
+    // }
+     for (std::uint8_t i = 0; i < 8; i++) {  
+        buffer[i] = 0x00;          // Red component
+        buffer[i + 8] = 0x00;      // Green component
+        buffer[i + 16] = 0x00;     // Blue component
+
+        printf("buffer [%d, %d, %d] = %d, %d, %d\n", 
+            i, 8 + i, 16 + i, 
+            i, 0, 0);
     }
+    
 }
 
 void clear_matrix()
 {
-    for (int i = 0; i <= 8; i++)
+    std::uint8_t buffer[192] {0};
+    for (int i = 0; i < 8; i++)
     {
-        clear_row(i);
+        int row_start = i * 24;
+        clear_row(buffer + row_start);
     }
+    printf("Last pixel (RGB) values: Red = %d, Green = %d, Blue = %d\n", buffer[184], buffer[185], buffer[191]);
+    for (int i = 0; i < 192; i++) {
+    printf("Buffer[%d] = %d\n", i, buffer[i]);
+    }
+
+    send_led_data(buffer, sizeof(buffer));
+    send_led_data(buffer + sizeof(buffer)-1, 1);
 }
 
 void blink_led(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b, int sleep_seconds)
@@ -189,5 +235,5 @@ void initialize_i2c()
     gpio_pull_up(I2C_SDA);
     gpio_pull_up(I2C_SCL);
 
-    clear_matrix();
+    // clear_matrix();
 }
