@@ -8,3 +8,4 @@ compile_commands.json
 /pico-sdk/
 /picoasm/
 /picoasm-install/
+/_deps/
