@@ -29,6 +29,8 @@ void initialize_i2c();
 void led_row(int row, std::uint8_t *color, size_t lenght);
 // can only set r, g or b to a value
 void set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b);
+// set coordinate and r g b each to a value
+void set_color_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b);
 
 void clear_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b);
 
@@ -60,8 +62,11 @@ int main()
     std::uint8_t red2[2] {4, 63};
     clear_matrix();
     set_pixel(2, 4, 255, 0, 0);
-    sleep_ms(10000);
     set_pixel(6, 0, 0, 0, 255);
+    set_pixel(7, 0, 0, 0, 10);
+    set_pixel(3, 0, 0, 255, 0);
+    set_pixel(3, 0, 255, 0, 0);
+    set_color_pixel(1, 0, 255, 255, 0);
     while (true) {
         // clear_matrix();
         // Example to turn on the Pico W LED
@@ -125,6 +130,13 @@ void blink_led(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b, int
     sleep_ms(sleep_seconds);
 }
 
+void set_color_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
+{
+    set_pixel(x, y, r, 0, 0);
+    set_pixel(x, y, 0, g, 0);
+    set_pixel(x, y , 0, 0 ,b);
+}
+
 void set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
 {   
     // use bitwise operators instead
@@ -140,8 +152,6 @@ void set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
     const int col = shift + y;
     
     const std::uint8_t placement = row + col;
-    printf("shift: %d\n", shift);
-    printf("placement: %d\n", placement);
     // sets the intensity to the first value that is not 0
     const std::uint8_t intensity {static_cast<std::uint8_t>((r != 0) ? r : ((g != 0) ? g : ((b != 0) ? b : 0)))};
     // max value can only be 63 because the registers only take up to 63
