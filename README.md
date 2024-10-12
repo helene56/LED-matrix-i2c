@@ -1,0 +1,1 @@
+This project is for connecting a raspberryp pi sense hat v2, with a raspberry pi pico W
