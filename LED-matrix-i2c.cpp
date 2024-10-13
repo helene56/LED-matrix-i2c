@@ -21,6 +21,8 @@ void send_led_data(std::uint8_t *data, size_t lenght);
 inline void clear_row(std::uint8_t* buffer);
 // clear whole matrix
 void clear_matrix();
+// clear matrix with a small delay to avoid the led staying on
+void initialize_clear_matrix();
 // blink
 void blink_led(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b, 
                int sleep_seconds);
@@ -50,23 +52,10 @@ int main()
 
     initialize_i2c();
     
-    
     // For more examples of I2C use see https://github.com/raspberrypi/pico-examples/tree/master/i2c
 
-    // example colors
-    std::uint8_t green[2] {9, 63};
-    std::uint8_t clear[2] {0, 0x00};
-    std::uint8_t clear2[2] {4, 0x00};
-    // 0 brightness, 63 full brightness
-    std::uint8_t red[2] {0, 63};
-    // the 5th led in the first row, turned fully on
-    std::uint8_t red2[2] {4, 63};
-    // matrix get powered on, but it is not fast enough for the matrix to be clesared
-    // for (int i = 0; i < 10; i++)
-    // {
-    //     clear_matrix();
-    // }
-    // clear_matrix();
+    initialize_clear_matrix();
+
     set_pixel(2, 4, 255, 0, 0);
     set_pixel(6, 0, 0, 0, 255);
     set_pixel(7, 0, 0, 0, 10);
@@ -74,16 +63,15 @@ int main()
     set_pixel(3, 0, 255, 0, 0);
     set_color_pixel(1, 0, 5, 255, 251);
     set_color_pixel(1, 1, 66, 14, 150);
+
+
     while (true) {
-        clear_matrix();
         // Example to turn on the Pico W LED
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
         printf("Hello, world!\n");
         blink_led(0, 0, 100, 0, 0, 250);
         blink_led(0, 4, 255, 0, 0, 250);
         
-        // blink_led(red, clear, 250);
-        // blink_led(red2, clear2, 250);
     }
 }
 
@@ -100,6 +88,14 @@ void send_led_data(std::uint8_t *data, size_t lenght)
         printf("Data sent succesfully\n");
     }
     
+}
+
+
+void initialize_clear_matrix()
+{
+    // small delay to prevent the led light from staying on even if it got cleared
+    sleep_ms(30);
+    clear_matrix();
 }
 
 void send_led_data_continue(std::uint8_t *data, size_t lenght)
@@ -129,43 +125,24 @@ void led_row(int row, std::uint8_t *color, size_t lenght)
 
 inline void clear_row(std::uint8_t* buffer)
 {
-    // for (std::uint8_t i = row; i <= 23+row; i++)
-    // {
-    //     // std::uint8_t clear[2] {i, 0x00};
-    //     buffer[2 * (i - row)] = i;
-    //     buffer[2 * (i - row) + 1] = 0x00;
-
-    //     printf("buffer [%d, %d] = %d, %d\n", 2 * (i - row), 2 * (i - row) + 1, i, 0);
-    //     // batch the data into a buffer, then send all at once
-    //     // send_led_data(clear, 2);
-    // }
      for (std::uint8_t i = 0; i < 8; i++) {  
         buffer[i] = 0x00;          // Red component
         buffer[i + 8] = 0x00;      // Green component
         buffer[i + 16] = 0x00;     // Blue component
 
-        printf("buffer [%d, %d, %d] = %d, %d, %d\n", 
-            i, 8 + i, 16 + i, 
-            i, 0, 0);
     }
-    
 }
 
 void clear_matrix()
 {
-    std::uint8_t buffer[192] {0};
+    std::uint8_t buffer[193] {0};
     for (int i = 0; i < 8; i++)
     {
         int row_start = i * 24;
         clear_row(buffer + row_start);
     }
-    printf("Last pixel (RGB) values: Red = %d, Green = %d, Blue = %d\n", buffer[184], buffer[185], buffer[191]);
-    for (int i = 0; i < 192; i++) {
-    printf("Buffer[%d] = %d\n", i, buffer[i]);
-    }
 
     send_led_data(buffer, sizeof(buffer));
-    send_led_data(buffer + sizeof(buffer)-1, 1);
 }
 
 void blink_led(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b, int sleep_seconds)
