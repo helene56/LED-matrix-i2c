@@ -185,12 +185,13 @@ void set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
 }
 
 void clear_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
-
 {
     std::uint8_t rgb_flag {static_cast<std::uint8_t>(((r ? 1: 0) << 2) | ((g ? 1: 0) << 1) | ((b ? 1: 0) << 0))};
     int shift {0};
 
-    shift = (rgb_flag * 8) - 32;
+    shift = (rgb_flag == 0b100) ? 0 :
+            (rgb_flag == 0b010) ? 8 :
+            (rgb_flag == 0b001) ? 16 : -1; // -1 for error handling
     // 2. turn rgb values into intensity
     const int row = x * 24;
     const int col = shift + y;
@@ -212,5 +213,4 @@ void initialize_i2c()
     gpio_pull_up(I2C_SDA);
     gpio_pull_up(I2C_SCL);
 
-    // clear_matrix();
 }
