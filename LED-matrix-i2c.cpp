@@ -14,6 +14,8 @@
 // address to ATtiny which interfaces with the led matrix
 #define ATtiny_address 0x46
 
+void read_joystick();
+
 void send_led_data_continue(std::uint8_t *data, size_t lenght);
 // send data to the led matrix
 void send_led_data(std::uint8_t *data, size_t lenght);
@@ -213,4 +215,20 @@ void initialize_i2c()
     gpio_pull_up(I2C_SDA);
     gpio_pull_up(I2C_SCL);
 
+}
+
+void read_joystick()
+{
+    std::uint8_t buffer[10] {0};
+    int result = i2c_read_blocking(I2C_PORT, ATtiny_address, buffer, 
+                                   sizeof(buffer), false);
+
+    if (result < 0)
+    {
+        printf("I2C read failed\n");
+    }
+    else
+    {
+        printf("Data read succesfully\n");
+    }
 }
