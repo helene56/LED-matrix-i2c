@@ -12,7 +12,8 @@ constexpr int I2C_SDA {8};
 constexpr int I2C_SCL {9};
 constexpr int POWER_PIN {16};
 // address to ATtiny which interfaces with the led matrix
-#define ATtiny_address 0x46
+constexpr std::uint8_t ATtiny_address {0x46};
+
 
 void read_joystick();
 

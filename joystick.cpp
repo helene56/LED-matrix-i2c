@@ -1,4 +1,5 @@
 #include "joystick.h"
+#include <stdio.h>
 
 void read_joystick(std::uint8_t *buffer_dst)
 {
