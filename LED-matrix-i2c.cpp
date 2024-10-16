@@ -4,6 +4,8 @@
 #include "pico/cyw43_arch.h"
 
 #include <cstdint>
+// own header files
+#include "joystick.h"
 // I2C defines
 // This example will use I2C0 on GPIO8 (SDA) and GPIO9 (SCL) running at 400KHz.
 // Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
@@ -19,7 +21,7 @@ void read_joystick();
 
 void send_led_data_continue(std::uint8_t *data, size_t lenght);
 // send data to the led matrix
-void send_led_data(std::uint8_t *data, size_t lenght);
+void send_data(std::uint8_t *data, size_t lenght);
 // clear row
 inline void clear_row(std::uint8_t* buffer);
 // clear whole matrix
@@ -59,26 +61,36 @@ int main()
 
     initialize_clear_matrix();
 
-    set_pixel(2, 4, 255, 0, 0);
-    set_pixel(6, 0, 0, 0, 255);
-    set_pixel(7, 0, 0, 0, 10);
-    set_pixel(3, 0, 0, 255, 0);
-    set_pixel(3, 0, 255, 0, 0);
-    set_color_pixel(1, 0, 5, 255, 251);
-    set_color_pixel(1, 1, 66, 14, 150);
+    // set_pixel(2, 4, 255, 0, 0);
+    // set_pixel(6, 0, 0, 0, 255);
+    // set_pixel(7, 0, 0, 0, 10);
+    // set_pixel(3, 0, 0, 255, 0);
+    // set_pixel(3, 0, 255, 0, 0);
+    // set_color_pixel(1, 0, 5, 255, 251);
+    // set_color_pixel(1, 1, 66, 14, 150);
 
-
+    std::uint8_t byte {0b11000010};
+    
     while (true) {
+        std::uint8_t buffer_dst [10] {0};
+        for (int i = 0; i < 10; ++i)
+        {
+            send_data(&byte, sizeof(byte));
+            read_joystick(buffer_dst);
+            printf("%d, i = %d\n", static_cast<int>(buffer_dst[i]), i);
+            ++byte;
+            sleep_ms(1000);
+        }
         // Example to turn on the Pico W LED
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-        printf("Hello, world!\n");
-        blink_led(0, 0, 100, 0, 0, 250);
-        blink_led(0, 4, 255, 0, 0, 250);
+        // printf("Hello, world!\n");
+        // blink_led(0, 0, 100, 0, 0, 250);
+        // blink_led(0, 4, 255, 0, 0, 250);
         
     }
 }
 
-void send_led_data(std::uint8_t *data, size_t lenght)
+void send_data(std::uint8_t *data, size_t lenght)
 {
     int result = i2c_write_blocking(I2C_PORT, ATtiny_address, data, lenght, false);
 
@@ -122,7 +134,7 @@ void led_row(int row, std::uint8_t *color, size_t lenght)
     row = row * 24;
     for (std::uint8_t i = row; i <= 23+row; i++)
     {
-        send_led_data(color, lenght);
+        send_data(color, lenght);
     }
 }
 
@@ -145,7 +157,7 @@ void clear_matrix()
         clear_row(buffer + row_start);
     }
 
-    send_led_data(buffer, sizeof(buffer));
+    send_data(buffer, sizeof(buffer));
 }
 
 void blink_led(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b, int sleep_seconds)
@@ -183,7 +195,7 @@ void set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
     // max value can only be 63 because the registers only take up to 63
     std::uint8_t color[2] {placement, static_cast<std::uint8_t>(((intensity * 63) / 255))};
     // for now always just use full intensity
-    send_led_data(color, sizeof(color));
+    send_data(color, sizeof(color));
 
 }
 
@@ -203,7 +215,7 @@ void clear_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
 
     std::uint8_t clear_color[2] {placement, 0x00};
     // for now always just use full intensity
-    send_led_data(clear_color, sizeof(clear_color));
+    send_data(clear_color, sizeof(clear_color));
 }
 
 void initialize_i2c()
