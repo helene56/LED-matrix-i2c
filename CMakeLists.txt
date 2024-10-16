@@ -54,6 +54,11 @@ target_include_directories(LED-matrix-i2c PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
 )
 
+# Add your joystick.cpp file to the list of source files
+target_sources(LED-matrix-i2c PRIVATE
+  ${CMAKE_CURRENT_LIST_DIR}/joystick.cpp  # Add the path to your joystick.cpp
+)
+
 # Add any user requested libraries
 target_link_libraries(LED-matrix-i2c 
         hardware_i2c
