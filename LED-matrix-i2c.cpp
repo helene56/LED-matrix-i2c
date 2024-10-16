@@ -7,10 +7,10 @@
 // I2C defines
 // This example will use I2C0 on GPIO8 (SDA) and GPIO9 (SCL) running at 400KHz.
 // Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
-#define I2C_PORT i2c0
-#define I2C_SDA 8
-#define I2C_SCL 9
-#define POWER_PIN 16
+i2c_inst_t* I2C_PORT {i2c0};
+constexpr int I2C_SDA {8};
+constexpr int I2C_SCL {9};
+constexpr int POWER_PIN {16};
 // address to ATtiny which interfaces with the led matrix
 #define ATtiny_address 0x46
 
@@ -215,20 +215,4 @@ void initialize_i2c()
     gpio_pull_up(I2C_SDA);
     gpio_pull_up(I2C_SCL);
 
-}
-
-void read_joystick()
-{
-    std::uint8_t buffer[10] {0};
-    int result = i2c_read_blocking(I2C_PORT, ATtiny_address, buffer, 
-                                   sizeof(buffer), false);
-
-    if (result < 0)
-    {
-        printf("I2C read failed\n");
-    }
-    else
-    {
-        printf("Data read succesfully\n");
-    }
 }
