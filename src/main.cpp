@@ -14,7 +14,6 @@
 i2c_inst_t* I2C_PORT {i2c0};
 constexpr int I2C_SDA {8};
 constexpr int I2C_SCL {9};
-constexpr int POWER_PIN {16};
 
 // address to ATtiny which interfaces with the led matrix
 constexpr std::uint8_t ATtiny_address {0x46};
@@ -26,10 +25,6 @@ void initialize_i2c();
 int main()
 {
     stdio_init_all();
-    // should use a transistor with this pin as well maybe..
-    gpio_init(POWER_PIN);
-    gpio_set_dir(POWER_PIN, GPIO_OUT);
-    gpio_put(POWER_PIN, 1);
     // Initialise the Wi-Fi chip
     if (cyw43_arch_init()) {
         printf("Wi-Fi init failed\n");
