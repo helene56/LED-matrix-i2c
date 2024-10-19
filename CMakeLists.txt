@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(LED-matrix-i2c main.cpp )
+add_executable(LED-matrix-i2c src/main.cpp )
 
 pico_set_program_name(LED-matrix-i2c "LED-matrix-i2c")
 pico_set_program_version(LED-matrix-i2c "0.1")
@@ -50,14 +50,14 @@ target_link_libraries(LED-matrix-i2c
 
 # Add the standard include files to the build
 target_include_directories(LED-matrix-i2c PRIVATE
-  ${CMAKE_CURRENT_LIST_DIR}
+  ${CMAKE_CURRENT_LIST_DIR}/include
   ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
 )
 
 # Add your joystick.cpp file to the list of source files
 target_sources(LED-matrix-i2c PRIVATE
-  ${CMAKE_CURRENT_LIST_DIR}/joystick.cpp  # Add the path to your joystick.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/led.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/src/joystick.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/src/led.cpp
 )
 
 # Add any user requested libraries
