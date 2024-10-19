@@ -1,6 +1,5 @@
 #include "led.h"
 #include <stdio.h>
-#include "led.h"
 #include <array>
 
 void send_data(std::uint8_t *data, size_t lenght)

@@ -8,6 +8,7 @@
 // own header files
 #include "joystick.h"
 #include "led.h"
+#include "snake.h"
 // I2C defines
 // This example will use I2C0 on GPIO8 (SDA) and GPIO9 (SCL) running at 400KHz.
 // Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
@@ -37,12 +38,14 @@ int main()
 
     initialize_clear_matrix();
 
-    // std::array<std::uint8_t, 2> pixel = set_pixel(0, 0, 255, 0, 0);
     set_pixel(0, 0, 255, 0, 0);
     set_pixel(1, 1, 0, 0, 255);
 
+    Snake snake{};
+    snake.head();
     while (true) {
         
+        snake.move_head();
         // Example to turn on the Pico W LED
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
         // printf("Hello, world!\n");

@@ -58,6 +58,7 @@ target_include_directories(LED-matrix-i2c PRIVATE
 target_sources(LED-matrix-i2c PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/src/joystick.cpp
   ${CMAKE_CURRENT_LIST_DIR}/src/led.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/src/snake.cpp
 )
 
 # Add any user requested libraries
