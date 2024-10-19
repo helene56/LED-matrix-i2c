@@ -4,6 +4,7 @@
 #include "pico/cyw43_arch.h"
 
 #include <cstdint>
+#include <array>
 // own header files
 #include "joystick.h"
 // I2C defines
@@ -13,6 +14,9 @@ i2c_inst_t* I2C_PORT {i2c0};
 constexpr int I2C_SDA {8};
 constexpr int I2C_SCL {9};
 constexpr int POWER_PIN {16};
+std::uint8_t PORTDstate {0x0B};
+// constexpr std::uint8_t PORTDinput {0x0A};
+// constexpr std::uint8_t PORTC7 {0x08};
 // address to ATtiny which interfaces with the led matrix
 constexpr std::uint8_t ATtiny_address {0x46};
 
@@ -36,7 +40,7 @@ void initialize_i2c();
 
 void led_row(int row, std::uint8_t *color, size_t lenght);
 // can only set r, g or b to a value
-void set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b);
+std::array<std::uint8_t, 2> set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b);
 // set coordinate and r g b each to a value
 void set_color_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b);
 
@@ -61,7 +65,9 @@ int main()
 
     initialize_clear_matrix();
 
-    // set_pixel(2, 4, 255, 0, 0);
+    // std::array<std::uint8_t, 2> pixel = set_pixel(0, 0, 255, 0, 0);
+    set_pixel(0, 0, 255, 0, 0);
+    set_pixel(1, 1, 0, 0, 255);
     // set_pixel(6, 0, 0, 0, 255);
     // set_pixel(7, 0, 0, 0, 10);
     // set_pixel(3, 0, 0, 255, 0);
@@ -69,23 +75,143 @@ int main()
     // set_color_pixel(1, 0, 5, 255, 251);
     // set_color_pixel(1, 1, 66, 14, 150);
 
-    std::uint8_t byte {0b11000010};
-    
+    // std::uint8_t byte {0b00000000};
+
+    // write to portd to set the 3:7 to inputs (skip, they are by defeault set to 0)
+    // mask bit 3 to 7, to isolate the joytstick inputs
+    std::uint8_t joystickmask {0b11111000};
+    std::uint8_t reg = 0x2B; // PORTD address
+    std::uint8_t value = 0b11111000; // Enable pull-ups on bits 3-7
+    // Enable pull-ups on bits 3-7
+    // i2c_write_blocking(I2C_PORT, ATtiny_address, &reg, 1, true); // Send register address
+    // i2c_write_blocking(I2C_PORT, ATtiny_address, &value, 1, true); // Write pull-up enable
     while (true) {
-        std::uint8_t buffer_dst [10] {0};
-        for (int i = 0; i < 10; ++i)
-        {
-            send_data(&byte, sizeof(byte));
-            read_joystick(buffer_dst);
-            printf("%d, i = %d\n", static_cast<int>(buffer_dst[i]), i);
-            ++byte;
-            sleep_ms(1000);
-        }
+        // std::uint8_t joystick_data {0};
+        // // Send the register address you want to read from
+        // int result = i2c_write_blocking(I2C_PORT, ATtiny_address, &reg, 1, true);  // true to keep the connection open
+        // if (result < 0) {
+        //     printf("I2C write failed for reg 0x%02X\n", reg);
+        // }
+        // // Read the value from the register
+        // result = i2c_read_blocking(I2C_PORT, ATtiny_address, &joystick_data, 1, false);  // false to close the connection after read
+        // printf("Raw joystick value: 0x%02X\n", joystick_data);
+
+        // std::uint8_t joystick_data;
+        // read_joystick(&joystick_data);  // Read from register 0x2B (PORTD)
+        // // Print raw value
+        // printf("Raw joystick value: 0x%02X\n", joystick_data);
+        // // Send register address to ATtiny88 (PORTD, 0x2B)
+        // int result = i2c_write_blocking(I2C_PORT, ATtiny_address, &reg, 1, true); // Send register address
+        // if (result < 0) {
+        //     printf("I2C write failed for reg 0x%02X\n", reg);
+        // }
+        // // Add a small delay to avoid overwhelming the system
+        // sleep_ms(200);
+
+        
+        // std::uint8_t joystick_data;
+        // read_joystick(&joystick_data);  // Read from register 0x2B (PORTD)
+        // joystick_data &= 0xF8;  // Mask to focus on bits 3 to 7 (0b11111000)
+
+        // // Check each direction:
+        // if (!(joystick_data & (1 << 3))) {
+        //     printf("Joystick UP is pressed\n");
+        // }
+        // if (!(joystick_data & (1 << 4))) {
+        //     printf("Joystick DOWN is pressed\n");
+        // }
+        // if (!(joystick_data & (1 << 5))) {
+        //     printf("Joystick LEFT is pressed\n");
+        // }
+        // if (!(joystick_data & (1 << 6))) {
+        //     printf("Joystick RIGHT is pressed\n");
+        // }
+        // if (!(joystick_data & (1 << 7))) {
+        //     printf("Joystick ENTER is pressed\n");
+        // }
+        // // Send register address to ATtiny88 (PIND, 0x29)
+        // int result = i2c_write_blocking(I2C_PORT, ATtiny_address, &reg, 1, true); // Send register address
+        // if (result < 0) {
+        //     printf("I2C write failed for reg 0x%02X\n", reg);
+        // }
+
+        // Read 1 byte from ATtiny88 (PIND)
+        // result = i2c_read_blocking(I2C_PORT, ATtiny_address, &buffer_dst, 1, false); // Read 1 byte
+        // if (result < 0) 
+        // {
+        //     printf("I2C read failed for reg 0x%02X\n", reg);
+        // } else 
+        // {
+        //     // Mask the result to focus on bits 3-7 (joystick directions)
+        //     buffer_dst &= 0b11111000;
+        //     printf("PIND register value: 0x%02X\n", buffer_dst);
+
+        //     // Check joystick directions by reading specific bits:
+        //     if (!(buffer_dst & (1 << 3))) {
+        //         printf("Joystick LEFT is pressed\n");
+        //     }
+        //     if (!(buffer_dst & (1 << 4))) {
+        //         printf("Joystick RIGHT is pressed\n");
+        //     }
+        //     if (!(buffer_dst & (1 << 5))) {
+        //         printf("Joystick UP is pressed\n");
+        //     }
+        //     if (!(buffer_dst & (1 << 6))) {
+        //         printf("Joystick DOWN is pressed\n");
+        //     }
+        //     if (!(buffer_dst & (1 << 7))) {
+        //         printf("Joystick ENTER (middle) is pressed\n");
+        //     }
+        // }
+
+        // // Add a small delay to avoid overwhelming the system
+        // sleep_ms(200);
+    
+        
+        
+    
+
+        // std::uint8_t buffer_dst = 0xF8;
+        // read_joystick(&buffer_dst);
+        // // Print raw value
+        // printf("Raw joystick value: 0x%02X\n", buffer_dst);
+        // // Shift and mask to get joystick state
+        // std::uint8_t joystick_state = (buffer_dst & joystickmask) >> 3;
+        // // Check each joystick direction
+        // if (joystick_state & (1 << 0))
+        // {
+        //     printf("Joystick direction 1 is pressed\n");
+        // }
+        // if (joystick_state & (1 << 1))
+        // {
+        //     printf("Joystick direction 2 is pressed\n");
+        // }
+        // if (joystick_state & (1 << 2))
+        // {
+        //     printf("Joystick direction 3 is pressed\n");
+        // }
+        // if (joystick_state & (1 << 3))
+        // {
+        //     printf("Joystick direction 4 is pressed\n");
+        // }
+        // if (joystick_state & (1 << 4))
+        // {
+        //     printf("Joystick direction 5 is pressed\n");
+        // }
+        // sleep_ms(1000); // Add a small delay to avoid overwhelming the system.
+        // for (int i = 0; i < 100; ++i)
+        // {
+        //     printf("%d, i = %d\n", static_cast<int>(buffer_dst[i]), i);
+        //     sleep_ms(1000);
+        // }
+        // read_joystick(pixel.data());
+        // printf("%d\n", static_cast<int>(pixel[0]));
+        // sleep_ms(1000);
         // Example to turn on the Pico W LED
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-        // printf("Hello, world!\n");
-        // blink_led(0, 0, 100, 0, 0, 250);
-        // blink_led(0, 4, 255, 0, 0, 250);
+        printf("Hello, world!\n");
+        blink_led(0, 0, 100, 0, 0, 250);
+        blink_led(0, 4, 255, 0, 0, 250);
         
     }
 }
@@ -175,7 +301,7 @@ void set_color_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t 
     set_pixel(x, y , 0, 0 ,b);
 }
 
-void set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
+std::array<std::uint8_t, 2> set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
 {   
     // use bitwise operators instead
     // turn rgb into a single flag
@@ -193,9 +319,10 @@ void set_pixel(int x, int y, std::uint8_t r, std::uint8_t g, std::uint8_t b)
     // sets the intensity to the first value that is not 0
     const std::uint8_t intensity {static_cast<std::uint8_t>((r != 0) ? r : ((g != 0) ? g : ((b != 0) ? b : 0)))};
     // max value can only be 63 because the registers only take up to 63
-    std::uint8_t color[2] {placement, static_cast<std::uint8_t>(((intensity * 63) / 255))};
+    std::array<std::uint8_t, 2> color {placement, static_cast<std::uint8_t>(((intensity * 63) / 255))};
     // for now always just use full intensity
-    send_data(color, sizeof(color));
+    send_data(color.data(), color.size() * sizeof(std::uint8_t));
+    return color;
 
 }
 
