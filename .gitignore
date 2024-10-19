@@ -10,3 +10,4 @@ compile_commands.json
 /picoasm-install/
 /_deps/
 docs/notes.md
+config
