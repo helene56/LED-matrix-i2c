@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(LED-matrix-i2c LED-matrix-i2c.cpp )
+add_executable(LED-matrix-i2c main.cpp )
 
 pico_set_program_name(LED-matrix-i2c "LED-matrix-i2c")
 pico_set_program_version(LED-matrix-i2c "0.1")
