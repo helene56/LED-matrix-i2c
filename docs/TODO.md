@@ -4,3 +4,6 @@
 
 ## general
 - figure out how to communicate with the controller on the sense hat [ x ]
+
+## snake game
+- make class for snake object
