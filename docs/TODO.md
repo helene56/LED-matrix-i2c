@@ -3,4 +3,4 @@
 (might be able to remove the small delay before clearing the led matrix)
 
 ## general
-- figure out how to communicate with the controller on the sense hat
+- figure out how to communicate with the controller on the sense hat [ x ]
