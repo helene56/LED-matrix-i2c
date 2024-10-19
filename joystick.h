@@ -1,5 +1,5 @@
-#ifndef READ_JOYSTICK
-#define READ_JOYSTICK
+#ifndef JOYSTICK
+#define JOYSTICK
 
 #include "hardware/i2c.h"
 #include <cstdint>
